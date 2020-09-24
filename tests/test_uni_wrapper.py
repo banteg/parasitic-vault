@@ -36,3 +36,9 @@ def test_uni_wrapper(a, UniswapWrapper, interface, chain):
     # recover it
     wrapper.dust(yfi, {'from': user})
     assert yfi.balanceOf(wrapper) == 0
+    # test quote
+    amount_in = yfi.balanceOf(user)
+    min_amount_out = wrapper.quote(yfi, dai, amount_in)
+    yfi.approve(wrapper, infinite, {'from': user})
+    wrapper.swap(yfi, dai, amount_in, min_amount_out, user, {'from': user})
+    assert yfi.balanceOf(user) == 0

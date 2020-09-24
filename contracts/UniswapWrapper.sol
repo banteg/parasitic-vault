@@ -9,6 +9,11 @@ interface Uniswap {
         address to,
         uint256 deadline
     ) external returns (uint256[] memory amounts);
+    
+    function getAmountsOut(
+        uint amountIn,
+        address[] memory path
+    ) external view returns (uint[] memory amounts);
 }
 
 interface IERC20 {
@@ -59,6 +64,20 @@ contract UniswapWrapper {
             block.timestamp
         );
         return true;
+    }
+
+    function quote(address token_in, address token_out, uint256 amount_in) external view returns (uint256) {
+        bool is_weth = token_in == weth || token_out == weth;
+        address[] memory path = new address[](is_weth ? 2 : 3);
+        path[0] = token_in;
+        if (is_weth) {
+            path[1] = token_out;
+        } else {
+            path[1] = weth;
+            path[2] = token_out;
+        }
+        uint256[] memory amounts = Uniswap(uniswap).getAmountsOut(amount_in, path);
+        return amounts[amounts.length - 1];
     }
 
     function dust(address _token) external returns (bool) {
